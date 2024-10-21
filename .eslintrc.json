@@ -1,0 +1,3 @@
+{
+  "extends": "react-app" // These are the eslint rules that we have installed before
+}
