@@ -1,5 +1,6 @@
 import styles from "./CountryItem.module.css";
 
+/* eslint-disable */
 function CountryItem({ country }) {
   return (
     <li className={styles.countryItem}>

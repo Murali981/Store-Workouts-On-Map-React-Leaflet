@@ -1,8 +1,12 @@
 // "https://api.bigdatacloud.net/data/reverse-geocode-client?latitude=0&longitude=0"
 
+/* eslint-disable */
+
 import { useState } from "react";
 
 import styles from "./Form.module.css";
+import Button from "./Button";
+import { useNavigate } from "react-router-dom";
 
 export function convertToEmoji(countryCode) {
   const codePoints = countryCode
@@ -13,6 +17,8 @@ export function convertToEmoji(countryCode) {
 }
 
 function Form() {
+  const navigate = useNavigate();
+
   const [cityName, setCityName] = useState("");
   const [country, setCountry] = useState("");
   const [date, setDate] = useState(new Date());
@@ -49,8 +55,18 @@ function Form() {
       </div>
 
       <div className={styles.buttons}>
-        <button>Add</button>
-        <button>&larr; Back</button>
+        <Button type="primary">Add</Button>
+        <Button
+          type="back"
+          onClick={(e) => {
+            e.preventDefault(); // Here we are writing the "e.preventDefault()" because this Button component is inside the <form> so whenever
+            // we click on the button it will automatically submit the form by reloading the page. So this is the reason we are preventing the
+            // default submission of the form by writing "e.preventDefault()"
+            navigate(-1); // Here "-1" takes one step back to your previous page from where you came from
+          }}
+        >
+          &larr; Back
+        </Button>
       </div>
     </form>
   );
