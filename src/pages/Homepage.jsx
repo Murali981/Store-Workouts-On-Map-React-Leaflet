@@ -22,7 +22,7 @@ export default function Homepage() {
           you have wandered the world.
         </h2>
         {/* In the down we are using a global className which is "cta" */}
-        <Link to="/app" className="cta">
+        <Link to="/login" className="cta">
           Start tracking now
         </Link>
       </section>
