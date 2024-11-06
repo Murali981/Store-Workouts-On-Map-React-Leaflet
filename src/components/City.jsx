@@ -25,7 +25,7 @@ function City() {
     function () {
       getCity(id);
     },
-    [id]
+    [id, getCity]
   );
 
   // We are trying to read the latitude and longitude from the URL . To do this we will use useSearchParams() hook given by the react-router

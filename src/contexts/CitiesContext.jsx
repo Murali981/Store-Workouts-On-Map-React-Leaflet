@@ -5,7 +5,7 @@ import {
   useContext,
   useEffect,
   useReducer,
-  useState,
+  useCallback,
 } from "react";
 
 const BASE_URL = "http://localhost:8000";
@@ -106,30 +106,33 @@ function CitiesProvider({ children }) {
   }, []);
 
   // Creating a function to get the current city
-  async function getCity(id) {
-    // We will get the City from our fake server based on the id of the city.
-    console.log(id, currentCity.id); // Here the "id" is coming from the URL which  is a string and please remember that
-    // Whatever coming from the URL is basically a string
+  const getCity = useCallback(
+    async function getCity(id) {
+      // We will get the City from our fake server based on the id of the city.
+      console.log(id, currentCity.id); // Here the "id" is coming from the URL which  is a string and please remember that
+      // Whatever coming from the URL is basically a string
 
-    if (Number(id) === currentCity.id) {
-      // Here that's why we are converting the "id" into a Number before comparing it
-      // with the currentCity.id
-      return;
-    }
+      if (Number(id) === currentCity.id) {
+        // Here that's why we are converting the "id" into a Number before comparing it
+        // with the currentCity.id
+        return;
+      }
 
-    dispatch({ type: "loading" });
+      dispatch({ type: "loading" });
 
-    try {
-      const res = await fetch(`${BASE_URL}/cities/${id}`);
-      const data = await res.json();
-      dispatch({ type: "city/loaded", payload: data });
-    } catch {
-      dispatch({
-        type: "rejected",
-        payload: "There was an error loading the city...",
-      });
-    }
-  }
+      try {
+        const res = await fetch(`${BASE_URL}/cities/${id}`);
+        const data = await res.json();
+        dispatch({ type: "city/loaded", payload: data });
+      } catch {
+        dispatch({
+          type: "rejected",
+          payload: "There was an error loading the city...",
+        });
+      }
+    },
+    [currentCity.id]
+  );
 
   async function createCity(newCity) {
     // We will get the City from our fake server based on the id of the city.

@@ -1,17 +1,39 @@
+import { lazy, Suspense } from "react";
 import { BrowserRouter, Navigate, Route, Routes } from "react-router-dom";
-import Product from "./pages/Product";
-import Pricing from "./pages/Pricing";
-import Homepage from "./pages/Homepage";
-import PageNotFound from "./pages/PageNotFound";
-import AppLayout from "./pages/AppLayout";
-import Login from "./pages/Login";
+import { CitiesProvider } from "./contexts/CitiesContext";
+import { AuthProvider } from "./contexts/FakeAuthContext";
+import ProtectedRoute from "./pages/ProtectedRoute";
+
 import City from "./components/City";
 import CityList from "./components/CityList";
 import CountryList from "./components/CountryList";
 import Form from "./components/Form";
-import { CitiesProvider } from "./contexts/CitiesContext";
-import { AuthProvider } from "./contexts/FakeAuthContext";
-import ProtectedRoute from "./pages/ProtectedRoute";
+import SpinnerFullPage from "./components/SpinnerFullPage";
+
+// import Product from "./pages/Product";
+// import Pricing from "./pages/Pricing";
+// import Homepage from "./pages/Homepage";
+// import PageNotFound from "./pages/PageNotFound";
+// import AppLayout from "./pages/AppLayout";
+// import Login from "./pages/Login";
+
+// dist/index.html                   0.48 kB │ gzip:   0.31 kB
+// dist/assets/index-21a91bb3.css   30.45 kB │ gzip:   5.08 kB
+// dist/assets/index-ebacab67.js   507.25 kB │ gzip: 147.72 kB
+
+/* WHAT IS THE SUSPENSE FEATURE IN MODERN REACT ? 
+   Suspense is a concurrent feature that is a part of modern react and this allows certain components to suspend which basically
+   means that this allows them to wait for something to happen and in our case the below lazy components are gonna be suspended
+   while they are being loaded. So here we can use the React built-In Suspense component to show a fallback which is the 
+   loading indicator which we are going to show
+*/
+
+const Homepage = lazy(() => import("./pages/Homepage"));
+const Product = lazy(() => import("./pages/Product"));
+const Pricing = lazy(() => import("./pages/Pricing"));
+const Login = lazy(() => import("./pages/Login"));
+const AppLayout = lazy(() => import("./pages/AppLayout"));
+const PageNotFound = lazy(() => import("./pages/PageNotFound"));
 
 /* We will take the react router to the next level by actually storing the state in the URL so that we can use it in different places of the 
 application. We can useState() hook also to store state but URL is also an excellent place to store the state and especially the UI state
@@ -53,47 +75,49 @@ function App() {
     <AuthProvider>
       <CitiesProvider>
         <BrowserRouter>
-          <Routes>
-            {/* Below will be the HomePage which is going to render as soon as application loads as we keep this as a index route */}
-            <Route index element={<Homepage />} />
-            <Route path="pricing" element={<Pricing />} />
-            <Route path="product" element={<Product />} />
-            <Route path="login" element={<Login />} />
-            {/* In the below app we are making a nested route as "/app/cities" , "/app/countries" and "/app/form" */}
-            <Route
-              path="app" // If we are going to any of the URL's in this application like "app/cities" (or) "app/cities/:id"
-              // (or) "app/countries" (or) "app/form" then we will render the below <AppLayout /> component. So this is the
-              // idea to wrap this entire component into the protected route and so this will check then the user is curr
-              // ently logged in (or) not. If not then it will simply redirect the user back to the home page
-              element={
-                <ProtectedRoute>
-                  <AppLayout />
-                </ProtectedRoute>
-              }
-            >
-              {/* We are adding an Index route here. An Index route is basically the default child route that is going to be matched if none of the 
+          <Suspense fallback={<SpinnerFullPage />}>
+            <Routes>
+              {/* Below will be the HomePage which is going to render as soon as application loads as we keep this as a index route */}
+              <Route index element={<Homepage />} />
+              <Route path="pricing" element={<Pricing />} />
+              <Route path="product" element={<Product />} />
+              <Route path="login" element={<Login />} />
+              {/* In the below app we are making a nested route as "/app/cities" , "/app/countries" and "/app/form" */}
+              <Route
+                path="app" // If we are going to any of the URL's in this application like "app/cities" (or) "app/cities/:id"
+                // (or) "app/countries" (or) "app/form" then we will render the below <AppLayout /> component. So this is the
+                // idea to wrap this entire component into the protected route and so this will check then the user is curr
+                // ently logged in (or) not. If not then it will simply redirect the user back to the home page
+                element={
+                  <ProtectedRoute>
+                    <AppLayout />
+                  </ProtectedRoute>
+                }
+              >
+                {/* We are adding an Index route here. An Index route is basically the default child route that is going to be matched if none of the 
           below child routes matches. So in the below we are creating a default which is index route */}
-              {/* In the below two routes where one is index route and the another one is "cities" both are pointing to the same component
+                {/* In the below two routes where one is index route and the another one is "cities" both are pointing to the same component
           which is <CityList /> . So now in the index route we are changing the element to use "<Navigate />" component which is given
           by the react-router-dom and the same as in the <Link> component we can specify the "to" prop in the <Navigate /> component */}
-              <Route index element={<Navigate replace to="cities" />} />
-              {/* You can think of the above <Navigate /> component is like a redirect where as soon as the index route got hit then it will 
+                <Route index element={<Navigate replace to="cities" />} />
+                {/* You can think of the above <Navigate /> component is like a redirect where as soon as the index route got hit then it will 
            redirect us to the "cities" route which is the below "cities" route. The above "replace" keyword will replace the current
            element in the history stack */}
-              <Route path="cities" element={<CityList />} />
-              {/* In the above nested route "/app/cities" where we will display the above "<p>" in the UI (or) in other words how are we now
+                <Route path="cities" element={<CityList />} />
+                {/* In the above nested route "/app/cities" where we will display the above "<p>" in the UI (or) in other words how are we now
            going to display one component (or) one element inside another component and this is where the <outlet> component provided by the 
            react router comes into play. We want to display the above "<p>" inside the <SideBar> component. So we will use this "<Outlet />"
            element inside the SideBar component. */}
-              <Route path="cities/:id" element={<City />} />
-              {/* In the above URL "cities/:id" we have linked this URL to the City component and so whenever the URL matches this URL 
-          we will render this City component */}
-              <Route path="countries" element={<CountryList />} />
-              <Route path="form" element={<Form />} />
-            </Route>
-            <Route path="*" element={<PageNotFound />} />
-            {/* When we put path="*" then it will catch all the routes that are not matching  to the one of the above three routes*/}
-          </Routes>
+                <Route path="cities/:id" element={<City />} />
+                {/* In the above URL "cities/:id" we have linked this URL to the City component and so whenever the URL matches this URL 
+                   we will render this City component */}
+                <Route path="countries" element={<CountryList />} />
+                <Route path="form" element={<Form />} />
+              </Route>
+              <Route path="*" element={<PageNotFound />} />
+              {/* When we put path="*" then it will catch all the routes that are not matching  to the one of the above three routes*/}
+            </Routes>
+          </Suspense>
         </BrowserRouter>
       </CitiesProvider>
     </AuthProvider>
